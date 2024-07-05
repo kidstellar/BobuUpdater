@@ -1,7 +1,7 @@
 {
   "name": "com.kidstellar.bobu",
   "version": "1.0.0",
-  "displayName": "Resources",
+  "displayName": "BobuUpdater",
   "description": "A package for updating Bobu.",
   "unity": "2020.3",
   "author": {
