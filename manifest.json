@@ -1,6 +1,6 @@
 {
   "dependencies": {
     "com.unity.package-manager-ui": "2.0.13",
-    "com.kidstellar.bobu": "file:Resources"
+    "com.kidstellar.bobu": "file:BobuUpdater"
   }
 }
