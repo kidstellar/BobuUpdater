@@ -1,9 +1,13 @@
 {
 	"name": "com.kidstellar.bobueditor",
 	"displayName": "Bobu Editor",
-	"version": "1.0.0",
-	"unity": "2021.29",
-	"description": "A package for updating Bobu.",
+	
+	
+"version": "1.0.0",
+	"unity": "2021.2",
+	
+	
+"description": "A package for updating Bobu.",
 	"dependencies": {
 	}
 }
