@@ -1,0 +1,16 @@
+{
+  "name": "com.kidstellar.bobu",
+  "version": "1.0.0",
+  "displayName": "Bobu Updater",
+  "description": "A package for updating Bobu.",
+  "unity": "2020.3",
+  "author": {
+    "name": "Bobu",
+    "email": "",
+    "url": ""
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kidstellar/BobuUpdater.git"
+  }
+}
