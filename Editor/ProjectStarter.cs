@@ -98,18 +98,38 @@ public class ProjectStarter : Editor
         {
             try
             {
+                // Paketi indir
                 client.DownloadFile(packageUrl, tempDownloadPath);
                 Debug.Log("Package downloaded successfully.");
 
+                // Dizinleri sil
+                DeleteDirectory(Application.dataPath + "/Assets/Resources/EditorScript");
+                DeleteDirectory(Application.dataPath + "/Assets/Resources/Mechanics");
+
+                // Paketi içe aktar
                 AssetDatabase.ImportPackage(tempDownloadPath, false);
                 Debug.Log("Package imported successfully.");
 
+                // Geçici dosyayı sil
                 File.Delete(tempDownloadPath);
             }
             catch (WebException ex)
             {
                 Debug.LogError("Failed to download the package: " + ex.Message);
             }
+        }
+    }
+
+    private static void DeleteDirectory(string path)
+    {
+        if (Directory.Exists(path))
+        {
+            Directory.Delete(path, true);
+            Debug.Log("Deleted directory: " + path);
+        }
+        else
+        {
+            Debug.LogWarning("Directory not found: " + path);
         }
     }
 }
