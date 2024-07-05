@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "com.unity.package-manager-ui": "2.0.13",
+    "com.yourcompany.bobu-updater": "file:Assets/BobuUpdater"
+  }
+}
