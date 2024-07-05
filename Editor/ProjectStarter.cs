@@ -103,8 +103,8 @@ public class ProjectStarter : Editor
                 Debug.Log("Package downloaded successfully.");
 
                 // Dizinleri sil
-                DeleteDirectory(Application.dataPath + "/Assets/Resources/EditorScript");
-                DeleteDirectory(Application.dataPath + "/Assets/Resources/Mechanics");
+                DeleteDirectory("Resources/EditorScript");
+                DeleteDirectory("Resources/Mechanics");
 
                 // Paketi içe aktar
                 AssetDatabase.ImportPackage(tempDownloadPath, false);
@@ -120,16 +120,21 @@ public class ProjectStarter : Editor
         }
     }
 
-    private static void DeleteDirectory(string path)
+    private static void DeleteDirectory(string relativePath)
     {
-        if (Directory.Exists(path))
+        string fullPath = Path.Combine(Application.dataPath, relativePath);
+
+        if (Directory.Exists(fullPath))
         {
-            Directory.Delete(path, true);
-            Debug.Log("Deleted directory: " + path);
+            Directory.Delete(fullPath, true);
+            FileUtil.DeleteFileOrDirectory(relativePath); // Unity'nin kendi API'sini kullanarak silme işlemi
+            FileUtil.DeleteFileOrDirectory(relativePath + ".meta"); // Meta dosyasını da silme
+            AssetDatabase.Refresh();
+            Debug.Log("Deleted directory: " + relativePath);
         }
         else
         {
-            Debug.LogWarning("Directory not found: " + path);
+            Debug.LogWarning("Directory not found: " + relativePath);
         }
     }
 }
