@@ -17,13 +17,19 @@ public class ProjectStarter : Editor
     //Güncelleme
     private const string packageUrl = "https://github.com/kidstellar/BobuPackages/raw/main/BobuEditor.unitypackage";
 
-    //Projeyi çalışma kurulumunu yapar
+    // Projeyi çalışma kurulumunu yapar
     [MenuItem("Bobu/Start Project", true)]
     public static bool ValidateStartProject()
     {
-        // isImporting true ise menü öğesini devre dışı bırak
+        // Gerekli klasörler var mı kontrol et
+        isImporting = Directory.Exists(Path.Combine(Application.dataPath, "Resources/EditorScript")) ||
+                            Directory.Exists(Path.Combine(Application.dataPath, "Resources/Mechanics")) ||
+                            Directory.Exists(Path.Combine(Application.dataPath, "Plugins"));
+
+        // isImporting true ise veya klasörler varsa menü öğesini devre dışı bırak
         return !isImporting;
     }
+
 
     [MenuItem("Bobu/Start Project")]
     public static void StartProject()
@@ -35,8 +41,6 @@ public class ProjectStarter : Editor
             Debug.LogWarning("Import process is already in progress.");
             return;
         }
-
-        isImporting = true;
 
         foreach (var url in githubUrls)
         {
@@ -83,7 +87,19 @@ public class ProjectStarter : Editor
         }
     }
 
-    //Bobu Editörün güncel olup olmadığını kontrol eder
+    // Bobu Editörün güncel olup olmadığını kontrol eder
+    [MenuItem("Bobu/Update Editor", true)]
+    public static bool ValidateUpdatePackage()
+    {
+        // Gerekli klasörler var mı kontrol et
+        bool foldersExist = Directory.Exists(Path.Combine(Application.dataPath, "Resources/EditorScript")) ||
+                            Directory.Exists(Path.Combine(Application.dataPath, "Resources/Mechanics")) ||
+                            Directory.Exists(Path.Combine(Application.dataPath, "Plugins"));
+
+        // Klasörler varsa menü öğesini etkinleştir
+        return foldersExist;
+    }
+
     [MenuItem("Bobu/Update Editor")]
     public static void UpdatePackage()
     {
