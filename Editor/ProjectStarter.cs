@@ -31,7 +31,7 @@ public class ProjectStarter : Editor
     }
 
 
-    [MenuItem("Bobu/Start Project")]
+    [MenuItem("Bobu/Updater/Start Project")]
     public static void StartProject()
     {
         if (isImporting)
@@ -88,7 +88,7 @@ public class ProjectStarter : Editor
     }
 
     // Bobu Editörün güncel olup olmadığını kontrol eder
-    [MenuItem("Bobu/Update Editor", true)]
+    [MenuItem("Bobu/Updater/Update Editor", true)]
     public static bool ValidateUpdatePackage()
     {
         // Gerekli klasörler var mı kontrol et
