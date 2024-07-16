@@ -18,7 +18,7 @@ public class ProjectStarter : Editor
     private const string packageUrl = "https://github.com/kidstellar/BobuPackages/raw/main/BobuEditor.unitypackage";
 
     // Projeyi çalışma kurulumunu yapar
-    [MenuItem("Bobu/Start Project", true)]
+    [MenuItem("Bobu/Updater/Start Project", true)]
     public static bool ValidateStartProject()
     {
         // Gerekli klasörler var mı kontrol et
@@ -100,7 +100,7 @@ public class ProjectStarter : Editor
         return foldersExist;
     }
 
-    [MenuItem("Bobu/Update Editor")]
+    [MenuItem("Bobu/Updater/Update Editor")]
     public static void UpdatePackage()
     {
         DownloadAndInstallPackage();
