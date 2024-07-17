@@ -137,7 +137,7 @@ public class ProjectStarter : Editor
         }
     }
 
-    [MenuItem("Bobu/Updater/Image Bundle Builder/Image Builder")]
+    [MenuItem("Bobu/Updater/Other Editors/Image Bundle Builder")]
     public static void UpdatePackageImage()
     {
         DownloadAndInstallPackageImage();
