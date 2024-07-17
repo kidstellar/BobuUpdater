@@ -137,7 +137,7 @@ public class ProjectStarter : Editor
         }
     }
 
-    [MenuItem("Bobu/Updater/Other Editors/Image Bundle Builder")]
+    [MenuItem("Bobu/Updater/Image Bundle Builder/Image Builder")]
     public static void UpdatePackageImage()
     {
         DownloadAndInstallPackageImage();
@@ -156,8 +156,7 @@ public class ProjectStarter : Editor
                 Debug.Log("Package downloaded successfully.");
 
                 // Dizinleri sil
-                DeleteDirectory("Resources/EditorScript");
-                DeleteDirectory("Resources/Mechanics");
+                DeleteDirectory("Resources/ImageBundleBuilder");
 
                 // Paketi içe aktar
                 AssetDatabase.ImportPackage(tempDownloadPath, false);
