@@ -24,10 +24,25 @@ namespace BobuEditor
     public enum SubSoundTag
     {
         None,           // Eðer alt tür kullanýlmayacaksa
-        Nature,
-        Urban,
-        Combat,
-        VoiceOver,
-        Foley
+        AI,
+        Agriculture,
+        Animal,
+        Button,
+        CartoonMinionFussin,
+        CharacterMove,
+        Home,
+        MotorVehicle,
+        OverallSound,
+        Piano,
+        Sport,
+        Water,
+        Weather,
+        AnimalsInfo,
+        BigMax,
+        Colors,
+        Pasha,
+        Pika,
+        Rose,
+        Toys
     } 
 }
