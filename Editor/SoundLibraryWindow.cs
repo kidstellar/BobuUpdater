@@ -72,20 +72,20 @@ namespace BobuEditor
 
         private void OnGUI()
         {
-            GUILayout.Label("Ses Kütüphanesi", EditorStyles.boldLabel);
+            GUILayout.Label("Sound Library", EditorStyles.boldLabel);
 
             GUILayout.BeginHorizontal();
 
             // Arama Barý
-            GUILayout.Label("Arama:", GUILayout.Width(50));
+            GUILayout.Label("Search:", GUILayout.Width(50));
             searchQuery = EditorGUILayout.TextField(searchQuery, GUILayout.Width(200));
 
             // Tür filtresi
-            GUILayout.Label("Tür:", GUILayout.Width(30));
+            GUILayout.Label("Type:", GUILayout.Width(30));
             tagFilter = (SoundTag)EditorGUILayout.EnumPopup(tagFilter, GUILayout.Width(100));
 
             // Alt tür filtresi
-            GUILayout.Label("Alt Tür:", GUILayout.Width(50));
+            GUILayout.Label("Subspecies:", GUILayout.Width(50));
             subTagFilter = (SubSoundTag)EditorGUILayout.EnumPopup(subTagFilter, GUILayout.Width(100));
 
             GUILayout.EndHorizontal();
