@@ -299,57 +299,6 @@ namespace BobuEditor
             }
         }
 
-        private async Task DownloadAndPlayClip(string url)
-        {
-            AudioType audioType = GetAudioTypeFromURL(url);
-
-            using (UnityWebRequest www = UnityWebRequestMultimedia.GetAudioClip(url, audioType))  // AudioType'ý ihtiyacýnýza göre ayarlayýn
-            {
-                var operation = www.SendWebRequest();
-
-                while (!operation.isDone)
-                    await Task.Yield();
-
-                if (www.result == UnityWebRequest.Result.ConnectionError || www.result == UnityWebRequest.Result.ProtocolError)
-                {
-                    Debug.LogError($"Error downloading audio clip: {www.error}. URL: {url}");
-                }
-                else
-                {
-                    // Ses dosyasýný indir ve AudioClip olarak al
-                    AudioClip clip = DownloadHandlerAudioClip.GetContent(www);
-
-                    if (clip != null)
-                    {
-                        PlayClipUsingAudioSource(clip);
-                    }
-                    else
-                    {
-                        Debug.LogError("Failed to load AudioClip from URL or unsupported audio format.");
-                    }
-                }
-            }
-        }
-
-        private void PlayClipUsingAudioSource(AudioClip clip)
-        {
-            if (clip != null)
-            {
-                // Geçici bir oyun objesi oluþtur
-                GameObject tempAudio = new GameObject("TempAudio");
-                AudioSource audioSource = tempAudio.AddComponent<AudioSource>();
-                audioSource.clip = clip;
-                audioSource.Play();
-
-                // Sesin süresi kadar bekle, sonra nesneyi yok et
-                StopClipWithDelay(0, tempAudio, clip.length);
-            }
-            else
-            {
-                Debug.LogError("AudioClip is null, cannot play sound.");
-            }
-        }
-
         private void StopClipWithDelay(int index, GameObject obj, float delay)
         {
             if (delay == 0 || obj == null)
