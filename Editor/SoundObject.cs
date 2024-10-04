@@ -43,6 +43,7 @@ namespace BobuEditor
         Pasha,
         Pika,
         Rose,
-        Toys
+        Toys,
+        Alphabet
     } 
 }

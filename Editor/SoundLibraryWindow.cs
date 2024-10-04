@@ -6,6 +6,10 @@ namespace BobuEditor
     using UnityEngine.Networking;
     using System.Threading.Tasks;
     using System.IO;
+    using System.Net.Http;
+    using System;
+    using UnityEditor.PackageManager;
+    using System.Net;
 
     public class SoundLibraryWindow : EditorWindow
     {
@@ -19,9 +23,14 @@ namespace BobuEditor
 
         private bool[] isDownloading; // Hangi seslerin indirildiðini izler
         private bool[] isDownloaded; // Hangi seslerin indirildiðini izler
-        private string[] fileSizes; // Dosya boyutlarýný saklar
         private int currentPlayingIndex = -1; // Þu anda çalan sesin indeksini tutar (-1: Hiçbiri çalmýyor)
         private bool[] isPlaying; // Her sesin çalma durumunu izler
+
+        private bool loaded = false;
+
+        private float rotationSpeed = 0.5f; // Dönüþ hýzýný kontrol eder (daha düþük deðer, daha yavaþ dönüþ)
+        private float rotationAngle = 0f;  // Çemberin açýsý
+        private Texture2D loadingSpinner; // Yükleme çemberi görseli
 
         private UnityEditor.EditorApplication.CallbackFunction destructionAction = null;
 
@@ -35,8 +44,16 @@ namespace BobuEditor
             window.maxSize = new Vector2(560, 600); // Maksimum boyut
         }
 
-        private async void OnEnable()
+        private void OnEnable()
         {
+
+            //string packageP = "Packages/com.kidstellar.bobuupdater/Textures/spinner.png";
+            //loadingSpinner = AssetDatabase.LoadAssetAtPath<Texture2D>(packageP);
+
+            loadingSpinner = EditorGUIUtility.Load("Assets/BobuUpdater/Editor/Textures/spinner.png") as Texture2D;
+
+            Debug.Log(loadingSpinner != null);
+
             // SoundObject varlýklarýný paket içinde arama
             string[] guids = AssetDatabase.FindAssets("t:SoundObject", new[] { packagePath });
 
@@ -53,112 +70,163 @@ namespace BobuEditor
             }
             else
             {
-                // Paket içerisinde ses bulunamadý, Resources klasörünü kullan
-                allSounds = Resources.FindObjectsOfTypeAll<SoundObject>();
+                string[] gui = AssetDatabase.FindAssets("t:SoundObject");
+                allSounds = gui.Select(guid => AssetDatabase.LoadAssetAtPath<SoundObject>(AssetDatabase.GUIDToAssetPath(guid))).ToArray();
             }
 
             isDownloading = new bool[allSounds.Length]; // Ýndirme iþlemi süren sesler
             isDownloaded = new bool[allSounds.Length];  // Ýndirilen sesler
 
-            fileSizes = new string[allSounds.Length];
             isPlaying = new bool[allSounds.Length]; // Tüm seslerin çalma durumu baþlangýçta false olacak (yani çalmýyor)
 
-            for (int i = 0; i < allSounds.Length; i++)
-            {
-                // Dosya boyutunu al ve fileSizes dizisine kaydet
-                fileSizes[i] = await GetFileSizeFromURL(allSounds[i].downloadLink);
-            }
+            loaded = true;
         }
 
         private void OnGUI()
         {
-            GUILayout.Label("Sound Library", EditorStyles.boldLabel);
-
-            GUILayout.BeginHorizontal();
-
-            // Arama Barý
-            GUILayout.Label("Search:", GUILayout.Width(50));
-            searchQuery = EditorGUILayout.TextField(searchQuery, GUILayout.Width(200));
-
-            // Tür filtresi
-            GUILayout.Label("Type:", GUILayout.Width(30));
-            tagFilter = (SoundTag)EditorGUILayout.EnumPopup(tagFilter, GUILayout.Width(100));
-
-            // Alt tür filtresi
-            GUILayout.Label("Subspecies:", GUILayout.Width(50));
-            subTagFilter = (SubSoundTag)EditorGUILayout.EnumPopup(subTagFilter, GUILayout.Width(100));
-
-            GUILayout.EndHorizontal();
-
-            // Dýþ alan stili
-            GUIStyle outerBoxStyle = new GUIStyle(GUI.skin.box);
-            outerBoxStyle.normal.background = MakeTex(2, 2, new Color(0.1f, 0.1f, 0.1f, 1f));  // Koyu dýþ alan rengi
-
-            // ScrollView için dýþ alan
-            GUILayout.BeginVertical(outerBoxStyle);
-
-            // Scrollable alan
-            scrollPos = GUILayout.BeginScrollView(scrollPos);
-
-            // Filtrelenmiþ sesleri listele
-            var filteredSounds = allSounds
-                .Where(sound => string.IsNullOrEmpty(searchQuery) || sound.soundName.ToLower().Contains(searchQuery.ToLower()))
-                .Where(sound => tagFilter == SoundTag.All || sound.tag == tagFilter)  // All seçeneðinde filtreyi atla
-                .Where(sound => subTagFilter == SubSoundTag.None || sound.subTag == subTagFilter)  // Alt tür filtreleme
-                .ToList();
-
-            for (int i = 0; i < filteredSounds.Count; i++)
+            if (loaded)
             {
-                var sound = filteredSounds[i];
+                GUILayout.Label("Sound Library", EditorStyles.boldLabel);
 
-                // Ýndekse göre farklý renkler
-                Color bgColor = i % 2 == 0 ? new Color(0.2f, 0.2f, 0.2f, 1f) : new Color(0.15f, 0.15f, 0.15f, 1f);
-                GUIStyle boxStyle = new GUIStyle(GUI.skin.box);
-                boxStyle.normal.background = MakeTex(2, 2, bgColor);
+                GUILayout.BeginHorizontal();
 
-                GUILayout.BeginHorizontal(boxStyle);
+                // Arama Barý
+                GUILayout.Label("Search:", GUILayout.Width(50));
+                searchQuery = EditorGUILayout.TextField(searchQuery, GUILayout.Width(200));
 
-                // Ses adý için sabit geniþlik ayarý
-                GUILayout.Label(sound.soundName, GUILayout.Width(275));
+                // Tür filtresi
+                GUILayout.Label("Type:", GUILayout.Width(30));
+                tagFilter = (SoundTag)EditorGUILayout.EnumPopup(tagFilter, GUILayout.Width(100));
 
-                // Eðer indirme iþlemi sürüyorsa indirme simgesi göster
-                if (isDownloading[i])
-                {
-                    GUILayout.Label(EditorGUIUtility.IconContent("d_Progress"), GUILayout.Width(20), GUILayout.Height(20));
-                }
-                // Eðer indirme tamamlandýysa tik simgesi göster
-                else if (isDownloaded[i])
-                {
-                    GUILayout.Label(EditorGUIUtility.IconContent("d_FilterSelectedOnly"), GUILayout.Width(20), GUILayout.Height(20));
-                }
-                else
-                {
-                    GUILayout.Space(25); // Simge için boþluk
-                }
-
-                // Dosya boyutunu göster (örneðin 4.5 MB, 300 KB)
-                GUILayout.Label(fileSizes[i], GUILayout.Width(60));
-
-                // Dinle/Durdur butonu
-                string buttonLabel = isPlaying[i] ? "Durdur" : "Dinle";
-                if (GUILayout.Button(buttonLabel, GUILayout.Width(80)))
-                {
-                    PlayClipFromURL(sound.downloadLink, i); // Sesin URL'sini ve indeksini vererek çalma/durdurma iþlemini yap
-                }
-
-                // Ýndirme butonu için sabit geniþlik ayarý
-                if (GUILayout.Button("Ýndir", GUILayout.Width(80)))
-                {
-                    isDownloading[i] = true;
-                    DownloadAndSaveClip(sound.downloadLink, sound.soundName, i);  // Ýndirme durumu ve index ile
-                }
+                // Alt tür filtresi
+                GUILayout.Label("Subspecies:", GUILayout.Width(50));
+                subTagFilter = (SubSoundTag)EditorGUILayout.EnumPopup(subTagFilter, GUILayout.Width(100));
 
                 GUILayout.EndHorizontal();
+
+                // Dýþ alan stili
+                GUIStyle outerBoxStyle = new GUIStyle(GUI.skin.box);
+                outerBoxStyle.normal.background = MakeTex(2, 2, new Color(0.1f, 0.1f, 0.1f, 1f));  // Koyu dýþ alan rengi
+
+                // ScrollView için dýþ alan
+                GUILayout.BeginVertical(outerBoxStyle);
+
+                // Scrollable alan
+                scrollPos = GUILayout.BeginScrollView(scrollPos);
+
+                // Filtrelenmiþ sesleri listele
+                var filteredSounds = allSounds
+                    .Where(sound => string.IsNullOrEmpty(searchQuery) || sound.soundName.ToLower().Contains(searchQuery.ToLower()))
+                    .Where(sound => tagFilter == SoundTag.All || sound.tag == tagFilter)  // All seçeneðinde filtreyi atla
+                    .Where(sound => subTagFilter == SubSoundTag.None || sound.subTag == subTagFilter)  // Alt tür filtreleme
+                    .OrderBy(sound => sound.soundName)  // A-Z sýralamasý
+                    .ToList();
+
+                for (int i = 0; i < filteredSounds.Count; i++)
+                {
+                    var sound = filteredSounds[i];
+
+                    // Ýndekse göre farklý renkler
+                    Color bgColor = i % 2 == 0 ? new Color(0.2f, 0.2f, 0.2f, 1f) : new Color(0.15f, 0.15f, 0.15f, 1f);
+                    GUIStyle boxStyle = new GUIStyle(GUI.skin.box);
+                    boxStyle.normal.background = MakeTex(2, 2, bgColor);
+
+                    GUILayout.BeginHorizontal(boxStyle);
+
+                    // Ses adý için sabit geniþlik ayarý
+                    GUILayout.Label(sound.soundName, GUILayout.Width(320));
+
+                    // Eðer indirme iþlemi sürüyorsa indirme simgesi göster
+                    if (isDownloading[i])
+                    {
+                        GUILayout.Label(EditorGUIUtility.IconContent("d_Progress"), GUILayout.Width(20), GUILayout.Height(20));
+                    }
+                    // Eðer indirme tamamlandýysa tik simgesi göster
+                    else if (isDownloaded[i])
+                    {
+                        GUILayout.Label(EditorGUIUtility.IconContent("d_FilterSelectedOnly"), GUILayout.Width(20), GUILayout.Height(20));
+                    }
+                    else
+                    {
+                        GUILayout.Space(25); // Simge için boþluk
+                    }
+
+                    // Dinle/Durdur butonu
+                    string buttonLabel = isPlaying[i] ? "Durdur" : "Dinle";
+                    if (GUILayout.Button(buttonLabel, GUILayout.Width(80)))
+                    {
+                        PlayClipFromURL(sound.downloadLink, i); // Sesin URL'sini ve indeksini vererek çalma/durdurma iþlemini yap
+                    }
+
+                    // Ýndirme butonu için sabit geniþlik ayarý
+                    if (GUILayout.Button("Ýndir", GUILayout.Width(80)))
+                    {
+                        isDownloading[i] = true;
+                        DownloadAndSaveClip(sound.downloadLink, sound.soundName, i);  // Ýndirme durumu ve index ile
+                    }
+
+                    GUILayout.EndHorizontal();
+                }
+
+                GUILayout.EndScrollView();
+
+                GUILayout.EndVertical();  // Dýþ alaný kapat 
             }
+            else
+            {
+                // Yükleniyor ekraný
+                GUILayout.BeginVertical();
+                GUILayout.FlexibleSpace();
 
-            GUILayout.EndScrollView();
+                // Dönen çemberi çiz
+                GUILayout.BeginHorizontal();
+                GUILayout.FlexibleSpace();
 
-            GUILayout.EndVertical();  // Dýþ alaný kapat
+                // Çemberi döndür
+                DrawLoadingSpinner();
+
+                GUILayout.FlexibleSpace();
+                GUILayout.EndHorizontal();
+
+                GUILayout.FlexibleSpace();
+                GUILayout.EndVertical();
+
+                // Çemberin dönüþ açýsýný güncelle (zamanla orantýlý bir þekilde)
+                rotationAngle += rotationSpeed * Time.deltaTime;
+
+                // Eðer açý 360 dereceden büyükse sýfýrla (sonsuz döngü için)
+                if (rotationAngle > 360f)
+                {
+                    rotationAngle -= 360f;
+                }
+
+                Repaint(); // Yeniden çizim
+            }
+        }
+
+        private void DrawLoadingSpinner()
+        {
+            if (loadingSpinner != null)
+            {
+                float spinnerWidth = 100f;
+                float spinnerHeight = 100f;
+
+                // Görselin merkezini hesaplayýn
+                float pivotX = Screen.width / 2;
+                float pivotY = Screen.height / 2;
+
+                // GUI dönüþ iþlemi öncesi matrix'i kaydedin
+                Matrix4x4 matrixBackup = GUI.matrix;
+
+                // Görselin dönüþünü merkez noktasýnda saðlayýn
+                GUIUtility.RotateAroundPivot(rotationAngle, new Vector2(pivotX, pivotY));
+
+                // Görseli ekranda merkezleyin
+                GUI.DrawTexture(new Rect(pivotX - spinnerWidth / 2, pivotY - spinnerHeight / 2, spinnerWidth, spinnerHeight), loadingSpinner);
+
+                // GUI matrix'ini geri yükleyin
+                GUI.matrix = matrixBackup;
+            }
         }
 
         private async void DownloadAndSaveClip(string url, string fileName, int index)
@@ -323,44 +391,6 @@ namespace BobuEditor
                 if (currentPlayingIndex == index)
                 {
                     currentPlayingIndex = -1;
-                }
-            }
-        }
-
-        //Dosya boyutu öðrenme
-        private async Task<string> GetFileSizeFromURL(string url)
-        {
-            using (UnityWebRequest www = UnityWebRequest.Head(url))
-            {
-                var operation = www.SendWebRequest();
-
-                while (!operation.isDone)
-                    await Task.Yield();
-
-                if (www.result == UnityWebRequest.Result.ConnectionError || www.result == UnityWebRequest.Result.ProtocolError)
-                {
-                    Debug.LogError($"Error fetching file size: {www.error}. URL: {url}");
-                    return "Unknown";
-                }
-                else
-                {
-                    string size = www.GetResponseHeader("Content-Length");
-                    if (!string.IsNullOrEmpty(size) && long.TryParse(size, out long sizeInBytes))
-                    {
-                        // Eðer dosya boyutu 1 MB'dan büyükse MB cinsinden göster, deðilse KB cinsinden göster
-                        if (sizeInBytes >= 1024 * 1024)
-                        {
-                            return $"{(sizeInBytes / (1024f * 1024f)):F2} MB";
-                        }
-                        else
-                        {
-                            return $"{(sizeInBytes / 1024f):F2} KB";
-                        }
-                    }
-                    else
-                    {
-                        return "Unknown";
-                    }
                 }
             }
         }

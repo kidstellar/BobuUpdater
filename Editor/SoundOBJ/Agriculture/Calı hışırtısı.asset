@@ -1,0 +1,18 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b04133e0dadb1844dbe2478085d83db6, type: 3}
+  m_Name: "Cal\u0131 h\u0131\u015F\u0131rt\u0131s\u0131"
+  m_EditorClassIdentifier: 
+  soundName: "Cal\u0131 h\u0131\u015F\u0131rt\u0131s\u0131"
+  downloadLink: https://github.com/kidstellar/BobuSoundLibrary/raw/refs/heads/main/SFX/Agriculture/%C3%A7al%C4%B1%20h%C4%B1%C5%9F%C4%B1rt%C4%B1s%C4%B1.ogg
+  tag: 3
+  subTag: 2
